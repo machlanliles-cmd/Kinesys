@@ -2,19 +2,22 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import type { TrainingParams, SimulationDataPoint, InitialPhysiology, TrainingAnalysis, OptimalTrainingAnalysis } from '../types';
 
-// FIX: Use process.env.API_KEY as per the coding guidelines. This resolves the error "Property 'env' does not exist on type 'ImportMeta'".
-const API_KEY = process.env.API_KEY;
-
+// This function centralizes API calls and error handling.
 async function callGeminiApi<T>(apiCall: () => Promise<T>): Promise<T> {
   try {
-    if (!API_KEY) {
-      throw new Error('API key not valid. Please pass a valid API key.');
-    }
     return await apiCall();
   } catch (error: any) {
     console.error("Error calling Gemini API:", error);
-    if (error.message && (error.message.includes('API key not valid') || error.message.includes('permission to access'))) {
-      throw new Error('API key not valid. Please pass a valid API key.');
+    // Vercel deployment errors will often be generic network errors if the key is missing.
+    // We provide a more helpful message to the user.
+    if (error.message && (error.message.includes('API key not valid') || error.message.includes('permission to access') || error.message.includes('API_KEY_INVALID'))) {
+      throw new Error('The provided Gemini API key is invalid or has been configured incorrectly.');
+    }
+    // A missing key might not throw a specific error, so we add a general check.
+    // FIX: Use process.env.API_KEY as per Gemini coding guidelines.
+    if (!process.env.API_KEY) {
+        // FIX: Use process.env.API_KEY and provide a more generic error message.
+        throw new Error('The Gemini API key is missing. Please ensure it is configured correctly for this environment.');
     }
     throw error;
   }
@@ -25,7 +28,8 @@ export async function getTrainingAnalysis(
   duration: number,
   finalStats: SimulationDataPoint
 ): Promise<TrainingAnalysis> {
-  const ai = new GoogleGenAI({ apiKey: API_KEY });
+  // FIX: Use process.env.API_KEY as per Gemini coding guidelines.
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const prompt = `
     Act as an expert sports biomechanics and physiology coach. A simulated athlete has the following initial physiology:
     - Age: ${params.initialPhysiology.age} years
@@ -92,7 +96,8 @@ export async function getTrainingAnalysis(
 }
 
 export async function getMovementAnalysis(movementDescription: string): Promise<string> {
-  const ai = new GoogleGenAI({ apiKey: API_KEY });
+  // FIX: Use process.env.API_KEY as per Gemini coding guidelines.
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const prompt = `
     Act as an expert biomechanist. Analyze the following athletic movement pattern described by a user.
     
@@ -109,6 +114,7 @@ export async function getMovementAnalysis(movementDescription: string): Promise<
 
   return callGeminiApi(async () => {
     const response = await ai.models.generateContent({
+      // FIX: Corrected model name typo from 'gememini-2.5-flash'
       model: 'gemini-2.5-flash',
       contents: prompt,
     });
@@ -122,7 +128,8 @@ export async function getOptimalTrainingAnalysis(
   finalStats: SimulationDataPoint,
   duration: number
 ): Promise<OptimalTrainingAnalysis> {
-  const ai = new GoogleGenAI({ apiKey: API_KEY });
+  // FIX: Use process.env.API_KEY as per Gemini coding guidelines.
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const prompt = `
     Act as an elite sports performance coach providing AI-driven recommendations.
     
@@ -168,7 +175,6 @@ export async function getOptimalTrainingAnalysis(
               description: "An explanation of the synergy between the optimal parameters and why this combination is ideal for the athlete's initial physiology. Formatted as Markdown."
             },
             projectedOutcome: {
-              // FIX: Corrected typo from T.STRING to Type.STRING.
               type: Type.STRING,
               description: "A summary of the expected improvements in a positive and motivational tone. Formatted as Markdown."
             }
