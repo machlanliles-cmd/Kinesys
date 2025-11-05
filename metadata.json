@@ -1,0 +1,5 @@
+{
+  "name": "Kinesys: a sports biomechatronics app",
+  "description": "An application for simulating an athlete's physical development based on training parameters. Users can input training statistics and see projected muscle growth, VO2 max, and other metrics over time, with AI-powered analysis from Gemini.",
+  "requestFramePermissions": []
+}
