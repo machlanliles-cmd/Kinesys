@@ -2,22 +2,17 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import type { TrainingParams, SimulationDataPoint, InitialPhysiology, TrainingAnalysis, OptimalTrainingAnalysis } from '../types';
 
-// This function centralizes API calls and error handling.
-async function callGeminiApi<T>(apiCall: () => Promise<T>): Promise<T> {
+// Helper to wrap API calls with consistent error handling for API key issues.
+async function withApiKeyCheck<T>(apiCall: () => Promise<T>): Promise<T> {
+  if (!process.env.API_KEY) {
+    throw new Error('API key is missing. The Vercel environment variable API_KEY is not configured.');
+  }
   try {
     return await apiCall();
   } catch (error: any) {
     console.error("Error calling Gemini API:", error);
-    // Vercel deployment errors will often be generic network errors if the key is missing.
-    // We provide a more helpful message to the user.
     if (error.message && (error.message.includes('API key not valid') || error.message.includes('permission to access') || error.message.includes('API_KEY_INVALID'))) {
-      throw new Error('The provided Gemini API key is invalid or has been configured incorrectly.');
-    }
-    // A missing key might not throw a specific error, so we add a general check.
-    // FIX: Use process.env.API_KEY as per Gemini coding guidelines.
-    if (!process.env.API_KEY) {
-        // FIX: Use process.env.API_KEY and provide a more generic error message.
-        throw new Error('The Gemini API key is missing. Please ensure it is configured correctly for this environment.');
+      throw new Error('API key is invalid. The provided Gemini API key is not valid or has been revoked. Please check your Vercel configuration.');
     }
     throw error;
   }
@@ -28,9 +23,9 @@ export async function getTrainingAnalysis(
   duration: number,
   finalStats: SimulationDataPoint
 ): Promise<TrainingAnalysis> {
-  // FIX: Use process.env.API_KEY as per Gemini coding guidelines.
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const prompt = `
+  return withApiKeyCheck(async () => {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const prompt = `
     Act as an expert sports biomechanics and physiology coach. A simulated athlete has the following initial physiology:
     - Age: ${params.initialPhysiology.age} years
     - Initial Body Weight: ${params.initialPhysiology.bodyWeight.toFixed(2)} kg
@@ -61,7 +56,6 @@ export async function getTrainingAnalysis(
     3.  **Potential Risks & Improvements:** Identify potential issues and suggest specific, actionable recommendations.
   `;
 
-  return callGeminiApi(async () => {
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: prompt,
@@ -96,9 +90,9 @@ export async function getTrainingAnalysis(
 }
 
 export async function getMovementAnalysis(movementDescription: string): Promise<string> {
-  // FIX: Use process.env.API_KEY as per Gemini coding guidelines.
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const prompt = `
+  return withApiKeyCheck(async () => {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const prompt = `
     Act as an expert biomechanist. Analyze the following athletic movement pattern described by a user.
     
     Movement Description: "${movementDescription}"
@@ -112,9 +106,7 @@ export async function getMovementAnalysis(movementDescription: string): Promise<
     Use headings, bold text, and bullet points for clarity. Do not use a title for the whole response.
   `;
 
-  return callGeminiApi(async () => {
     const response = await ai.models.generateContent({
-      // FIX: Corrected model name typo from 'gememini-2.5-flash'
       model: 'gemini-2.5-flash',
       contents: prompt,
     });
@@ -128,9 +120,9 @@ export async function getOptimalTrainingAnalysis(
   finalStats: SimulationDataPoint,
   duration: number
 ): Promise<OptimalTrainingAnalysis> {
-  // FIX: Use process.env.API_KEY as per Gemini coding guidelines.
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const prompt = `
+  return withApiKeyCheck(async () => {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const prompt = `
     Act as an elite sports performance coach providing AI-driven recommendations.
     
     An athlete's initial physiology is:
@@ -161,7 +153,6 @@ export async function getOptimalTrainingAnalysis(
     2.  **Projected Outcome:** Summarize the expected improvements in a positive and motivational tone.
   `;
 
-  return callGeminiApi(async () => {
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: prompt,

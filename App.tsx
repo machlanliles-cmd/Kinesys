@@ -70,6 +70,18 @@ const App: React.FC = () => {
     return Object.keys(errors).length === 0;
   };
 
+  const getDisplayError = (error: any): string => {
+    const message = error.message || 'An unknown error occurred. Please try again.';
+    // Check for specific messages from our service layer
+    if (message.includes('API key is missing')) {
+      return 'Configuration Error: The Gemini API key is not set. Please go to your Vercel project settings, add an Environment Variable named API_KEY with your key, and then redeploy.';
+    }
+    if (message.includes('API key is invalid')) {
+      return 'Authentication Error: The provided Gemini API key is invalid. Please verify the key in your Vercel environment variables is correct and has the necessary permissions.';
+    }
+    return message;
+  };
+
   const handleRunSimulation = async () => {
     if (!validateAllParams()) return;
 
@@ -86,12 +98,8 @@ const App: React.FC = () => {
       const analysis = await getTrainingAnalysis(trainingParams, simulationDuration, finalStats);
       setGeminiAnalysis(analysis);
     } catch (err: any) {
-      if (err.message?.includes('API key not valid')) {
-        setError('The Gemini API key is missing or invalid. Please ensure it is configured correctly for this environment.');
-      } else {
-        console.error(err);
-        setError('An error occurred during simulation or AI analysis. Please try again.');
-      }
+      console.error(err);
+      setError(getDisplayError(err));
     } finally {
       setIsLoading(false);
     }
@@ -111,12 +119,8 @@ const App: React.FC = () => {
       const analysis = await getMovementAnalysis(movementDescription);
       setMovementAnalysis(analysis);
     } catch (err: any) {
-      if (err.message?.includes('API key not valid')) {
-        setErrorMovement('The Gemini API key is missing or invalid. Please ensure it is configured correctly for this environment.');
-      } else {
-        console.error(err);
-        setErrorMovement('An error occurred during movement analysis. Please try again.');
-      }
+      console.error(err);
+      setErrorMovement(getDisplayError(err));
     } finally {
       setIsLoadingMovement(false);
     }
@@ -144,12 +148,8 @@ const App: React.FC = () => {
 
       setOptimalAnalysis(analysis);
     } catch (err: any) {
-      if (err.message?.includes('API key not valid')) {
-        setErrorOptimizing('The Gemini API key is missing or invalid. Please ensure it is configured correctly for this environment.');
-      } else {
-        console.error(err);
-        setErrorOptimizing('An error occurred during the optimization process. Please try again.');
-      }
+      console.error(err);
+      setErrorOptimizing(getDisplayError(err));
     } finally {
       setIsOptimizing(false);
     }
