@@ -4,8 +4,10 @@ import type { TrainingParams, SimulationDataPoint, InitialPhysiology, TrainingAn
 
 // Helper to wrap API calls with consistent error handling for API key issues.
 async function withApiKeyCheck<T>(apiCall: () => Promise<T>): Promise<T> {
-  if (!process.env.VITE_API_KEY) {
-    throw new Error('API key is missing. The Vercel environment variable VITE_API_KEY is not configured.');
+  // FIX: Use process.env.API_KEY as per guidelines
+  if (!process.env.API_KEY) {
+    // FIX: Update error message to refer to the correct environment variable.
+    throw new Error('API key is missing. The environment variable API_KEY is not configured.');
   }
   try {
     return await apiCall();
@@ -24,7 +26,8 @@ export async function getTrainingAnalysis(
   finalStats: SimulationDataPoint
 ): Promise<TrainingAnalysis> {
   return withApiKeyCheck(async () => {
-    const ai = new GoogleGenAI({ apiKey: process.env.VITE_API_KEY });
+    // FIX: Use process.env.API_KEY as per guidelines
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const prompt = `
     Act as an expert sports biomechanics and physiology coach. A simulated athlete has the following initial physiology:
     - Age: ${params.initialPhysiology.age} years
@@ -91,7 +94,8 @@ export async function getTrainingAnalysis(
 
 export async function getMovementAnalysis(movementDescription: string): Promise<string> {
   return withApiKeyCheck(async () => {
-    const ai = new GoogleGenAI({ apiKey: process.env.VITE_API_KEY });
+    // FIX: Use process.env.API_KEY as per guidelines
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const prompt = `
     Act as an expert biomechanist. Analyze the following athletic movement pattern described by a user.
     
@@ -121,7 +125,8 @@ export async function getOptimalTrainingAnalysis(
   duration: number
 ): Promise<OptimalTrainingAnalysis> {
   return withApiKeyCheck(async () => {
-    const ai = new GoogleGenAI({ apiKey: process.env.VITE_API_KEY });
+    // FIX: Use process.env.API_KEY as per guidelines
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const prompt = `
     Act as an elite sports performance coach providing AI-driven recommendations.
     

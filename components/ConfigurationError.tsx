@@ -9,7 +9,7 @@ export const ConfigurationError: React.FC<ConfigurationErrorProps> = ({ errorTyp
   return (
     <div className="flex flex-col items-center justify-center text-center p-8 bg-slate-800 rounded-xl border border-amber-500/50 h-full">
       <div className="p-3 bg-amber-500/10 rounded-full mb-4">
-        <svg xmlns="http://www.w.org/2000/svg" className="h-10 w-10 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       </div>
@@ -28,9 +28,11 @@ export const ConfigurationError: React.FC<ConfigurationErrorProps> = ({ errorTyp
         <ol className="list-decimal list-inside space-y-2 text-slate-300">
           <li>Go to your project dashboard on Vercel.</li>
           <li>Navigate to the <span className="font-semibold text-cyan-400">Settings &gt; Environment Variables</span> section.</li>
-          <li>Create a new variable. It must have the correct `VITE_` prefix:</li>
+          {/* FIX: Updated instructions to use API_KEY */}
+          <li>Create a new variable:</li>
           <ul className="list-disc list-inside pl-6 mt-2 space-y-1 bg-slate-800 p-3 rounded-md">
-              <li><strong>Name:</strong> <code className="bg-slate-700 px-2 py-1 rounded-md text-sm">VITE_API_KEY</code></li>
+              {/* FIX: Updated environment variable name to API_KEY */}
+              <li><strong>Name:</strong> <code className="bg-slate-700 px-2 py-1 rounded-md text-sm">API_KEY</code></li>
               <li><strong>Value:</strong> <span className="italic text-slate-400">[Paste your Gemini API key here]</span></li>
           </ul>
           <li><span className="font-bold text-amber-400">Important:</span> You must redeploy your project for the change to take effect.</li>
