@@ -3,6 +3,7 @@ import { StatChart } from './StatChart';
 import type { SimulationDataPoint, TrainingParams, TrainingAnalysis, OptimalTrainingAnalysis } from '../types';
 import { marked } from 'marked';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
+import { ConfigurationError } from './ConfigurationError';
 
 interface ResultsPanelProps {
   simulationData: SimulationDataPoint[];
@@ -306,9 +307,19 @@ export const ResultsPanel: React.FC<ResultsPanelProps> = ({
   }, [simulationData, optimalSimulationResult, movementAnalysis]);
 
   if (isLoading && !hasYourPlan && !hasOptimalPlan) return <LoadingSpinner />;
-  if (error) return <Placeholder title="Error">{error}</Placeholder>;
+
+  const effectiveError = error || errorOptimizing;
+  if (effectiveError) {
+    if (effectiveError.includes('Configuration Error')) {
+      return <ConfigurationError errorType="missing" />;
+    }
+    if (effectiveError.includes('Authentication Error')) {
+      return <ConfigurationError errorType="invalid" />;
+    }
+    return <Placeholder title="Error">{effectiveError}</Placeholder>;
+  }
+
   if (isOptimizing && !hasOptimalPlan) return <LoadingSpinner text="Running simulations to find the best plan..."/>
-  if (errorOptimizing && !hasOptimalPlan) return <Placeholder title="Error">{errorOptimizing}</Placeholder>;
 
   const hasAnyData = hasYourPlan || hasOptimalPlan || hasMovementAnalysis;
   if (!hasAnyData) {
